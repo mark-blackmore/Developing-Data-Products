@@ -9,6 +9,7 @@ manipulate(hist(rnorm(1:x)), x = slider(1, 1000))
 
 ########################################################################################
 # First Shiny app - starting from template
+library(shiny)
 ui <- fluidPage(
   sliderInput(inputId = "num", 
               label = "Choose an number",
