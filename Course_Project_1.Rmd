@@ -12,14 +12,37 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # NOAA Storm Data: Download and Import
+Storm data were read from the NOAA source url to the local level and read into R for processing.  Also listed are url's for the NOAA database codebook, and  the Coursera Reproducible Reasearch Forum on how to handle economic damage variables.
+
 ```{r message=FALSE}
 library(tidyverse)
-#url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+
+### NOAA Storn Database
+url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+
+### Codebook
+codebook_url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf"
+
+### Forum Notes on Handling PROPDMGEXP, CROPDMGWXP Variables
+forum_url <- "https://www.coursera.org/learn/reproducible-research/discussions/weeks/4/threads/IdtP_JHzEeaePQ71AQUtYw"
+
+exp_vars_url <- "https://rstudio-pubs-static.s3.amazonaws.com/58957_37b6723ee52b455990e149edde45e5b6.html"
+
 #download.file(url, destfile = "StormData.csv")
 stormData <- read.csv("StormData.csv", stringsAsFactors = FALSE)
 ```
 
 # Data Wrangling
+The original data was treated as read-only. Processing occured in steps, beginning with a copy of the source data. Date variables were coerced to class-date.  
+
+The entire data set begins in 1950 but initally only included the event type tornado. More event types were added over time. From 1996 on, all event types were used. Hence, we subsetted the data to events occurring on or after January 1, 1996.
+
+The storm data type variable "EVTYPE" and exponent variables were coerced to class factor for processing and to aid in investigation.  Several event types were renamed to conform with the NOAA Event Type classification table.  This reclassification also focused on major events and did not handle every instance, only those thought to have a major impact on this analysis.  
+
+Variables related to property damage and crop damage caused by storm events were converted to a common dollar basis and scaled to $ millions. Further disucssion here is technical and may be skipped without losing the overall point of this analysis.
+
+Variables for economic damage include PROPDMG for property damage, CROPDMG for crop damage, PROPDMGEXP for the power of ten exponent related to PROPDMG, and CROPDMGEXP for the power of ten exponent related to CROPDMG.  We used the discussion provided in exp_vars_url, listed above, as a guide to changing PROPDMG and CROPDMG to dollars in millions.  
+
 ```{r}
 ### Treat downloaded data as read-only
 stormData1 <- stormData
@@ -93,7 +116,7 @@ stormData3$prop_damage[stormData3$prop_damage == 1.15e+05] <- 115
 ```
 
 # Map Major Storms in 50 States: Over $10M Property Damages
-```{r message=FALSE}
+```{r message=FALSE, fig.width=9}
 ## For 50 States Only use 
 stormData4 <- stormData3[(stormData3$STATE %in% state.abb),]
 
@@ -111,7 +134,7 @@ stormDataMap1
 ```
 
 # Map Major Storms in 50 States: Over 10 Fatalities
-```{r message=FALSE}
+```{r message=FALSE, fig.width=9}
 ## Storms with over 10 Fatalities
 library(leaflet)
 stormData6 <- stormData4 %>% filter(LONGITUDE != 0) %>% 
