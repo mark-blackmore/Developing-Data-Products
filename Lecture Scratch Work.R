@@ -8,6 +8,15 @@ manipulate(plot(1:x), x = slider(1,100))
 manipulate(hist(rnorm(1:x)), x = slider(1, 1000))
 
 ########################################################################################
+# Shiny Template
+library(shiny)
+ui <- fluidPage()
+
+server <- function(input, output) {}
+
+shinyApp(ui = ui, server = server)
+
+#######################################################################################
 # First Shiny app - starting from template
 library(shiny)
 ui <- fluidPage(
