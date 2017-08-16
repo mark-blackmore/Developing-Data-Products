@@ -11,6 +11,13 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Introduction
+This report explores the NOAA Storm Database and creates interactive maps, in the interest of answering two basic questions:  
+
+1. Across the United States, which types of events have had at least ten million dollars in property damage? 
+2. Across the United States, which types of events have had at least ten fatalities? 
+
+
 # NOAA Storm Data: Download and Import
 Storm data were read from the NOAA source url to the local level and read into R for processing.  Also listed are url's for the NOAA database codebook, and  the Coursera Reproducible Reasearch Forum on how to handle economic damage variables.
 
@@ -113,9 +120,14 @@ stormData3 <- stormData2 %>%
 ## Checking Outliers & Correcting Entries
 stormData3$prop_damage[stormData3$prop_damage == 1.15e+05] <- 115
 
+## Correct Entry for Katrina
+stormData3$LATITUDE[stormData3$prop_damage == 3.13e+04]  <- 2995
+stormData3$LONGITUDE[stormData3$prop_damage == 3.13e+04] <- 9007
+
 ```
 
-# Map Major Storms in 50 States: Over $10M Property Damages
+# Map of Major Storms in 50 States: Over $10M Property Damages
+
 ```{r message=FALSE, fig.width=9}
 ## For 50 States Only use 
 stormData4 <- stormData3[(stormData3$STATE %in% state.abb),]
@@ -133,7 +145,7 @@ stormDataMap1 <- stormData5  %>% leaflet() %>% addTiles() %>%
 stormDataMap1
 ```
 
-# Map Major Storms in 50 States: Over 10 Fatalities
+# Map of Major Storms in 50 States: Over 10 Fatalities
 ```{r message=FALSE, fig.width=9}
 ## Storms with over 10 Fatalities
 library(leaflet)
