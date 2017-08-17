@@ -1,0 +1,150 @@
+---
+title: 'In Brief - Interactive Maps of Major US Storms: 1996 - 2011'
+author: "Mark Blackmore"
+date: "August 16, 2017"
+output: 
+  html_document:
+    keep_md: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Introduction
+This report explores the NOAA Storm Database and creates interactive maps, in the interest of answering two basic questions:  
+
+1. Across the United States, which types of events have had at least ten million dollars in property damage? 
+2. Across the United States, which types of events have had at least ten fatalities? 
+
+Click on a circle or marker to see storm event type.
+
+```{r message=FALSE}
+library(tidyverse)
+
+### NOAA Storn Database
+url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+
+### Codebook
+codebook_url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf"
+
+### Forum Notes on Handling PROPDMGEXP, CROPDMGWXP Variables
+forum_url <- "https://www.coursera.org/learn/reproducible-research/discussions/weeks/4/threads/IdtP_JHzEeaePQ71AQUtYw"
+
+exp_vars_url <- "https://rstudio-pubs-static.s3.amazonaws.com/58957_37b6723ee52b455990e149edde45e5b6.html"
+
+#download.file(url, destfile = "StormData.csv")
+stormData <- read.csv("StormData.csv", stringsAsFactors = FALSE)
+```
+
+
+```{r}
+### Treat downloaded data as read-only
+stormData1 <- stormData
+
+## Change event begin date varaiable class from character to date
+stormData1$BGN_DATE <- as.Date(stormData$BGN_DATE, format = "%m/%d/%Y")
+
+## Subset to years 1996 - 2011
+stormData2 <- stormData1 %>% filter(BGN_DATE >= "1996-01-01")
+
+## Change event type variable from character to factor for further investigation
+stormData2$EVTYPE   <- factor(stormData2$EVTYPE)
+stormData2$PROPDMGEXP   <- factor(stormData2$PROPDMGEXP)  
+stormData2$CROPDMGEXP   <- factor(stormData2$CROPDMGEXP)
+
+## Correct Event Types to NOAA specification
+stormData2$EVTYPE[stormData2$EVTYPE=="HURRICANE/TYPHOON"] <- "HURRICANE"
+stormData2$EVTYPE[stormData2$EVTYPE=="TYPHOON"] <- "HURRICANE"
+stormData2$EVTYPE[stormData2$EVTYPE=="STORM SURGE"] <- "STORM SURGE/TIDE"
+stormData2$EVTYPE[stormData2$EVTYPE=="TSTM WIND"] <- "THUNDERSTORM WIND"
+stormData2$EVTYPE[stormData2$EVTYPE=="TSTM WIND/HAIL"] <- "THUNDERSTORM WIND"
+stormData2$EVTYPE[stormData2$EVTYPE=="MARINE TSTM WIND"] <- "MARINE THUNDERSTORM WIND"
+stormData2$EVTYPE[stormData2$EVTYPE=="WILD/FOREST FIRE"] <- "WILDFIRE"
+stormData2$EVTYPE[stormData2$EVTYPE=="FOG"] <- "DENSE FOG"
+stormData2$EVTYPE[stormData2$EVTYPE=="URBAN/SML STREAM FLD"] <- "FLOOD"
+stormData2$EVTYPE[stormData2$EVTYPE=="WINTER WEATHER/MIX"] <- "WINTER WEATHER"
+stormData2$EVTYPE[stormData2$EVTYPE=="HEAVY SURF/HIGH SURF"] <- "HIGH SURF"
+stormData2$EVTYPE[stormData2$EVTYPE=="TSTM WIND (G45)"] <- "THUNDERSTORM WIND"
+stormData2$EVTYPE[stormData2$EVTYPE=="TSTM WIND (G40)"] <- "THUNDERSTORM WIND"
+stormData2$EVTYPE[stormData2$EVTYPE=="STRONG WINDS"] <- "HIGH WIND"
+stormData2$EVTYPE[stormData2$EVTYPE=="FREEZING RAIN"] <- "SLEET"
+stormData2$EVTYPE[stormData2$EVTYPE=="EXTREME WINDCHILL TEMPERATURES"] <- "EXTREME COLD/WIND CHILL"
+stormData2$EVTYPE[stormData2$EVTYPE=="COLD/WIND CHILL"] <- "EXTREME COLD/WIND CHILL"
+stormData2$EVTYPE[stormData2$EVTYPE=="EXTREME COLD"] <- "EXTREME COLD/WIND CHILL"
+stormData2$EVTYPE[stormData2$EVTYPE=="EXTREME WINDCHILL"] <- "EXTREME COLD/WIND CHILL"
+stormData2$EVTYPE[stormData2$EVTYPE=="COLD"] <- "EXTREME COLD/WIND CHILL"
+stormData2$EVTYPE[stormData2$EVTYPE=="RECORD COLD"] <- "EXTREME COLD/WIND CHILL"
+stormData2$EVTYPE[stormData2$EVTYPE=="UNSEASONABLY COLD"] <- "EXTREME COLD/WIND CHILL"
+stormData2$EVTYPE[stormData2$EVTYPE=="Cold"] <- "EXTREME COLD/WIND CHILL"
+stormData2$EVTYPE[stormData2$EVTYPE=="UNUSUALLY COLD"] <- "EXTREME COLD/WIND CHILL"
+stormData2$EVTYPE[stormData2$EVTYPE=="SNOW"] <- "HEAVY SNOW"
+stormData2$EVTYPE[stormData2$EVTYPE=="Snow"] <- "HEAVY SNOW"
+stormData2$EVTYPE[stormData2$EVTYPE=="EXCESSIVE SNOW"] <- "HEAVY SNOW"
+stormData2$EVTYPE[stormData2$EVTYPE=="WIND"] <- "HIGH WIND"
+stormData2$EVTYPE[stormData2$EVTYPE=="Heavy Rain"] <- "HEAVY RAIN"
+stormData2$EVTYPE[stormData2$EVTYPE=="RECORD RAINFALL"] <- "HEAVY RAIN"
+stormData2$EVTYPE[stormData2$EVTYPE=="RECORD WARMTH"] <- "HEAT"
+stormData2$EVTYPE[stormData2$EVTYPE=="UNUSUAL WARMTH"] <- "HEAT"
+stormData2$EVTYPE[stormData2$EVTYPE=="RECORD HEAT"] <- "HEAT"
+stormData2$EVTYPE[stormData2$EVTYPE=="UNSEASONABLY WARM"] <- "HEAT"
+stormData2$EVTYPE[stormData2$EVTYPE=="Winter Weather"] <- "WINTER WEATHER"
+stormData2$EVTYPE[stormData2$EVTYPE=="FREEZE"] <- "FROST/FREEZE"
+stormData2$EVTYPE   <- factor(stormData2$EVTYPE)
+
+## Mutate to common numeric/dollar basis, incorporating exp variables. Rescaled to Millions of Dollars ($000,000)
+stormData3 <- stormData2 %>%
+  mutate(prop_damage = ifelse(PROPDMGEXP == "", PROPDMG*10^-6, 
+    ifelse(PROPDMGEXP == "B", PROPDMG*10^3, 
+    ifelse(PROPDMGEXP == "M", PROPDMG*10^0, 
+    ifelse(PROPDMGEXP == "K", PROPDMG*10^-3,
+    ifelse(PROPDMGEXP ==  0,   PROPDMG*10^-5, PROPDMG)))))) %>%
+  mutate(crop_damage = ifelse(CROPDMGEXP == "", CROPDMG*10^-6, 
+    ifelse(CROPDMGEXP == "B", CROPDMG*10^3, 
+    ifelse(CROPDMGEXP == "M", CROPDMG*10^0, 
+    ifelse(CROPDMGEXP == "K", CROPDMG*10^-3,
+    ifelse(CROPDMGEXP ==  0,  CROPDMG*10^-5, CROPDMG))))))
+
+## Checking Outliers & Correcting Entries
+stormData3$prop_damage[stormData3$prop_damage == 1.15e+05] <- 115
+
+## Correct Entry for Katrina
+stormData3$LATITUDE[stormData3$prop_damage == 3.13e+04]  <- 2995
+stormData3$LONGITUDE[stormData3$prop_damage == 3.13e+04] <- 9007
+
+```
+
+# Map of Major Storms in 50 States: Over $10M Property Damages
+
+```{r message=FALSE, fig.width=9}
+## For 50 States Only use 
+stormData4 <- stormData3[(stormData3$STATE %in% state.abb),]
+
+## Storms with over $10M Property Damage
+library(leaflet)
+stormData5 <- stormData4 %>% filter(LONGITUDE != 0) %>% 
+  filter(prop_damage >= 1e+02) %>% mutate(lat = LATITUDE/100, 
+    lng = -abs(LONGITUDE)/100) %>% 
+  select(lat,lng, EVTYPE)
+
+## Create Interactive Map 
+stormDataMap1 <- stormData5  %>% leaflet() %>% addTiles() %>%  
+  addMarkers(clusterOptions = markerClusterOptions(), popup = stormData5$EVTYPE)
+stormDataMap1
+```
+
+# Map of Major Storms in 50 States: Over 10 Fatalities
+```{r message=FALSE, fig.width=9}
+## Storms with over 10 Fatalities
+library(leaflet)
+stormData6 <- stormData4 %>% filter(LONGITUDE != 0) %>% 
+  filter(FATALITIES >= 10) %>% mutate(lat = LATITUDE/100, 
+    lng = -abs(LONGITUDE)/100) %>% 
+  select(lat,lng, EVTYPE)
+
+## Create Interactive Map 
+stormDataMap2 <- stormData6  %>% leaflet() %>% addTiles() %>%  
+  addMarkers(clusterOptions = markerClusterOptions(), popup = stormData5$EVTYPE)
+stormDataMap2
+```
+
