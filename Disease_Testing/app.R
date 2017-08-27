@@ -1,11 +1,6 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+# Courera Data Science Specialization
+# Developing Data Products
+# Course Project - Shiny Web App
 
 library(shiny)
 
@@ -39,7 +34,7 @@ ui <- fluidPage(
       mainPanel(
         h3("Cases per 100,000 people"), 
         tableOutput("confusion"),
-        h3("plots"),
+        h3("Plot"),
         plotOutput("prediction")
       )
    )
@@ -63,12 +58,30 @@ server <- function(input, output) {
     df <- data.frame(outcome = c("Test Postive", "Test Negative", "Total"),
       Disease = c(TP, FN, totDis), 
       No_Disease = c(FP, TN, totNodis),
-      total = c(TP+FP, TN+FN, totDis + totNodis))
-    format(df,0)
+      Total = c(TP+FP, TN+FN, totDis + totNodis))
+    format(df)
     })
   
   output$prediction <- renderPlot({
-
+    n      <- 100000
+    totDis <- input$prev/100 * n
+    TP     <- floor(totDis * input$sens/100)
+    FN     <- totDis - TP
+    totNodis <- 100000 - totDis
+    TN     <- floor(totNodis * input$spec/100)
+    FP     <- totNodis - TN
+    
+    df <- data.frame(outcome = c("Test Postive", "Test Negative", "Total"),
+                     Disease = c(TP, FN, totDis), 
+                     No_Disease = c(FP, TN, totNodis),
+                     Total = c(TP+FP, TN+FN, totDis + totNodis))
+    df2 <- data.frame(outcome = c("PPV", "FOR", "Prevalence"),
+                      metric = 100 * df$Disease/df$Total)
+    
+    ggplot(df2, aes(x = outcome, y = metric)) + geom_bar(stat = "identity", fill="steelblue")+
+      geom_text(aes(label = metric), vjust=-0.3, size = 4) +
+      theme_minimal()
+    
   })
 }
 
