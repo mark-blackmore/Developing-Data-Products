@@ -42,8 +42,8 @@ ui <- fluidPage(
         strong(h4("Cases per 100,000 people")), 
         tableOutput("confusion"),
       
-        h5("False Omission Rate (FOR) - Given a negative test, what is the probability that you have the condition"),
-        h5("Positive Predictive Value (PPV): Given a positive test, what is the probaility that you have the condition"),
+        h5("False Omission Rate (FOR) - Given a negative test, what is the probability that you have the condition?"),
+        h5("Positive Predictive Value (PPV): Given a positive test, what is the probaility that you have the condition?"),
         plotOutput("prediction")
       )
    )
