@@ -9,7 +9,7 @@ Scenario
 
 - Suppose you take a diagnostic screening test for a particular condition or disease.
 
-- You test is postive.  What is the probaility you have the disease?
+- You test is postive.  What is the probability you have the disease?
 
 - You test is negative.  What is the probability you have the disease?
 
