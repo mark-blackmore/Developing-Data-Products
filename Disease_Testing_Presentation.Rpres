@@ -1,0 +1,68 @@
+Disease Screening Application Using Shiny
+========================================================
+author: Mark Blackmore
+date: August 30, 2017
+autosize: true
+
+Scenario
+========================================================
+
+- Suppose you take a diagnostic screening test for a particular condition or disease.
+
+- You test is postive.  What is the probability you have the disease?
+
+- You test is negative.  What is the probability you have the disease?
+
+- This Shiny application answers these questions.
+
+
+Application:  User Inputs and Outputs
+========================================================
+
+User Inputs
+- Prevalence:  Percent of the population that has the disease
+
+- Sensitivity:  Detection rate of people with disease.  Also called the True Positive Rate.
+
+- Specificity:  Detection rate of people without the disease.  Also called the True Negative Rate
+
+Outputs
+- Postive Predictive Value (PPV):  Given you a positive test result, the probability that you actually have the disease.
+
+- False Omission Rate (FOR):  Given a negative test results, the probability that you actually have the disease.
+
+
+How It Works
+========================================================
+
+```{r}
+# Inputs
+Prevalence  <- 0.09    
+Sensitivity <- 0.41
+Specificity <- 0.93
+
+# Calculations & Outputs
+print(PPV <- (Sensitivity * Prevalence) / ((Sensitivity * Prevalence + 
+         (1 - Specificity)*(1 - Prevalence))))
+print(FOR <- 1 - (Specificity * (1 - Prevalence)) / ((1- Sensitivity) * Prevalence + 
+         (Specificity*(1 - Prevalence))))
+
+```
+
+Output: Plot
+========================================================
+```{r, echo = FALSE}
+
+library(ggplot2)
+PPV <- round(PPV, 2)
+FOR <- round(FOR, 2)
+
+df2 <- data.frame(Outcome = c("PPV", "FOR", "Prevalence"), Metric = c(PPV, FOR, Prevalence))
+
+
+ggplot(df2, aes(x = Outcome, y = Metric)) + geom_bar(stat = "identity", fill="steelblue")+
+      geom_text(aes(label = Metric), vjust=-0.3, size = 4) +
+      theme_minimal() 
+```
+
+[Go to the App]("https://mblackmo.shinyapps.io/Disease_Testing/")
