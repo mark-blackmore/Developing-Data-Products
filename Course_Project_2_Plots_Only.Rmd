@@ -11,7 +11,7 @@ output:
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-# Introduction
+## Introduction
 This report explores the NOAA Storm Database and creates interactive plots of property damaged by time of storm and crop damaged versus property damaged.
 
 ```{r message=FALSE}

@@ -5,20 +5,20 @@ date: "August 16, 2017"
 output: 
   html_document:
     keep_md: TRUE
+    toc: TRUE
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Introduction
+## Introduction
 This report explores the NOAA Storm Database and creates interactive maps, in the interest of answering two basic questions:  
 
 1. Across the United States, which types of events have had at least ten million dollars in property damage? 
 2. Across the United States, which types of events have had at least ten fatalities? 
 
-
-# NOAA Storm Data: Download and Import
+## NOAA Storm Data: Download and Import
 Storm data were read from the NOAA source url to the local level and read into R for processing.  Also listed are url's for the NOAA database codebook, and  the Coursera Reproducible Reasearch Forum on how to handle economic damage variables.
 
 ```{r message=FALSE}
@@ -39,7 +39,7 @@ exp_vars_url <- "https://rstudio-pubs-static.s3.amazonaws.com/58957_37b6723ee52b
 stormData <- read.csv("StormData.csv", stringsAsFactors = FALSE)
 ```
 
-# Data Wrangling
+## Data Wrangling
 The original data was treated as read-only. Processing occured in steps, beginning with a copy of the source data. Date variables were coerced to class-date.  
 
 The entire data set begins in 1950 but initally only included the event type tornado. More event types were added over time. From 1996 on, all event types were used. Hence, we subsetted the data to events occurring on or after January 1, 1996.
@@ -126,7 +126,7 @@ stormData3$LONGITUDE[stormData3$prop_damage == 3.13e+04] <- 9007
 
 ```
 
-# Map of Major Storms in 50 States: Over $10M Property Damages
+## Map of Major Storms in 50 States: Over $10M Property Damages  
 
 ```{r message=FALSE, fig.width=9}
 ## For 50 States Only use 
@@ -145,7 +145,8 @@ stormDataMap1 <- stormData5  %>% leaflet() %>% addTiles() %>%
 stormDataMap1
 ```
 
-# Map of Major Storms in 50 States: Over 10 Fatalities
+## Map of Major Storms in 50 States: Over 10 Fatalities  
+
 ```{r message=FALSE, fig.width=9}
 ## Storms with over 10 Fatalities
 library(leaflet)
